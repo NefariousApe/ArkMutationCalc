@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Stat Calculator</title>
+  </head>
+  <body>
+    <h2>Creature Stat Calculator</h2>
+
+    <form id="statForm">
+      <!-- Mating Interval -->
+      <label for="minInterval">Minimum Mating Interval (hours):</label><br />
+      <input
+        type="number"
+        id="minInterval"
+        name="minInterval"
+        min="0"
+        step="0.1"
+      /><br /><br />
+      <label for="maxInterval">Maximum Mating Interval (hours):</label><br />
+      <input
+        type="number"
+        id="maxInterval"
+        name="maxInterval"
+        min="0"
+        step="0.1"
+      /><br /><br />
+
+      <!-- Adulthood Time -->
+      <label for="adulthoodTime">Time to Reach Adulthood (hours):</label><br />
+      <input
+        type="number"
+        id="adulthoodTime"
+        name="adulthoodTime"
+        min="0"
+        step="0.1"
+      /><br /><br />
+
+      <!-- Desired Stats -->
+      <label>Select Desired Stats:</label><br />
+      <input type="checkbox" id="health" name="stats" value="health" />
+      <label for="health">Health</label><br />
+      <input type="checkbox" id="damage" name="stats" value="damage" />
+      <label for="damage">Damage</label><br />
+      <input type="checkbox" id="oxygen" name="stats" value="oxygen" />
+      <label for="oxygen">Oxygen</label><br />
+      <input type="checkbox" id="food" name="stats" value="food" />
+      <label for="food">Food</label><br />
+      <input type="checkbox" id="weight" name="stats" value="weight" />
+      <label for="weight">Weight</label><br />
+      <input type="checkbox" id="stamina" name="stats" value="stamina" />
+      <label for="stamina">Stamina</label><br /><br />
+
+      <!-- Desired Percentages -->
+      <label for="percentages"
+        >Desired Percentages (comma-separated, e.g., 60,70,80):</label
+      ><br />
+      <input type="text" id="percentages" name="percentages" /><br /><br />
+
+      <!-- Submit Button -->
+      <input type="button" value="Submit" onclick="submitForm()" />
+    </form>
+
+    <h3>Input Summary:</h3>
+    <div id="summary"></div>
+
+    <script>
+      function submitForm() {
+        // Basic Inputs
+        var minInterval = parseFloat(
+          document.getElementById("minInterval").value
+        );
+        var maxInterval = parseFloat(
+          document.getElementById("maxInterval").value
+        );
+        var adulthoodTime = parseFloat(
+          document.getElementById("adulthoodTime").value
+        );
+        var stats = document.querySelectorAll('input[name="stats"]:checked');
+        var selectedStats = [];
+        stats.forEach((stat) => {
+          selectedStats.push(stat.value);
+        });
+        var percentages = document
+          .getElementById("percentages")
+          .value.split(",")
+          .map(Number);
+
+        // Calculations
+        var avgInterval = (minInterval + maxInterval) / 2;
+        var eggsPerBreeder = 48 / avgInterval;
+        var results = calculateEggsAndBreeders(percentages, eggsPerBreeder);
+
+        // Display Summary
+        var summary =
+          "Minimum Interval: " +
+          minInterval +
+          " hours<br>" +
+          "Maximum Interval: " +
+          maxInterval +
+          " hours<br>" +
+          "Time to Adulthood: " +
+          adulthoodTime +
+          " hours<br>" +
+          "Selected Stats: " +
+          selectedStats.join(", ") +
+          "<br><br>" +
+          "Eggs and Breeders Needed:<br>" +
+          results;
+
+        document.getElementById("summary").innerHTML = summary;
+      }
+
+      function calculateEggsAndBreeders(percentages, eggsPerBreeder) {
+        var statProbability = 0.0125; // Example probability for a specific stat
+        var results = "";
+
+        percentages.forEach(function (percentage) {
+          var targetProbability = percentage / 100;
+          var totalEggs = calculateEggsForProbability(
+            targetProbability,
+            statProbability
+          );
+          var breedersNeeded = Math.ceil(totalEggs / eggsPerBreeder);
+          results +=
+            "For " +
+            percentage +
+            "%: " +
+            totalEggs +
+            " eggs, " +
+            breedersNeeded +
+            " breeders<br>";
+        });
+
+        return results;
+      }
+
+      function calculateEggsForProbability(targetProbability, statProbability) {
+        var totalEggs = 0;
+        var cumulativeProbability = 0;
+
+        while (cumulativeProbability < targetProbability) {
+          totalEggs++;
+          var noSuccessProbability = Math.pow(1 - statProbability, totalEggs);
+          cumulativeProbability = 1 - noSuccessProbability;
+        }
+
+        return totalEggs;
+      }
+    </script>
+  </body>
+</html>
